@@ -2,8 +2,11 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ITradeDatapoint } from '@/types/trade';
 
-export async function GET(request: Request, { params }: { params: { trade_id: string } }) {
-  const trade_id = params.trade_id;
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ trade_id: string }> } // <-- CHANGED: Type is now a Promise
+) {
+  const { trade_id } = await params;
   
   try {
     const client = await clientPromise;

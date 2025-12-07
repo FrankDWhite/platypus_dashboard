@@ -30,6 +30,7 @@ export async function GET() {
     });
     
   } catch (e) {
+    console.error("Error fetching trades:", e);
     return NextResponse.json({ error: 'DB Error' }, { status: 500 });
   }
 }

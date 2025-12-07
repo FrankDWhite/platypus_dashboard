@@ -56,7 +56,11 @@ export default function TradesClient() {
         setHistoricalTrades(historicalTrades);
         setSystemConfig(systemConfig);
       } catch (e) {
-        setError("Failed to load trades.");
+        if (e instanceof Error) {
+          setError(e.message);
+        } else {
+          setError("Failed to load trades.");
+        }
         console.error(e);
       } finally {
         setLoading(false);

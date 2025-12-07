@@ -22,7 +22,8 @@ import SystemStatus from "./SystemStatus";
 async function fetchTrades() {
   const res = await fetch("/api/trades");
   if (!res.ok) {
-    throw new Error("Failed to fetch trades");
+    const error = await res.json();
+    throw new Error(error.error || "Failed to fetch trades. No specific error available");
   }
   return res.json();
 }

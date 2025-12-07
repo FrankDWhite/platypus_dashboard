@@ -30,7 +30,12 @@ export async function GET() {
     });
     
   } catch (e) {
-    console.error("Error fetching trades:", e);
+    if (e instanceof Error) {
+      console.error("Error fetching trades:", e.message);
+      console.error("Stack trace:", e.stack);
+    } else {
+      console.error("An unknown error occurred:", e);
+    }
     return NextResponse.json({ error: 'DB Error' }, { status: 500 });
   }
 }

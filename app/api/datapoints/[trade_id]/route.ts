@@ -7,21 +7,21 @@ export async function GET(
   { params }: { params: Promise<{ trade_id: string }> } // <-- CHANGED: Type is now a Promise
 ) {
   const { trade_id } = await params;
-  console.log(`Fetching datapoints for trade_id: ${trade_id}`);
+  console.error(`Fetching datapoints for trade_id: ${trade_id}`);
   
   try {
-    console.log("Attempting to connect to database...");
+    console.error("Attempting to connect to database...");
     const client = await clientPromise;
-    console.log("Database connection successful.");
+    console.error("Database connection successful.");
     const db = client.db("platypus_dashboard_db");
 
-    console.log(`Fetching datapoints for trade_id: ${trade_id}...`);
+    console.error(`Fetching datapoints for trade_id: ${trade_id}...`);
     // Fetch datapoints specifically for this UUID
     const datapoints = await db.collection<ITradeDatapoint>("trade_datapoints")
       .find({ trade_id: trade_id })
       .sort({ timestamp: 1 }) // Chronological order for graphs
       .toArray();
-    console.log(`Successfully fetched ${datapoints.length} datapoints.`);
+    console.error(`Successfully fetched ${datapoints.length} datapoints.`);
 
     return NextResponse.json(datapoints);
     

@@ -4,24 +4,30 @@ import { IOpenTrade, IHistoricalTrade } from '@/types/trade';
 
 export async function GET() {
   try {
+    console.log("Attempting to connect to database...");
     const client = await clientPromise;
+    console.log("Database connection successful.");
+
     const db = client.db("platypus_dashboard_db");
 
-    // Fetch Open Trades
+    console.log("Fetching open trades...");
     const openTrades = await db.collection<IOpenTrade>("open_trades")
       .find({})
       .sort({ openedTime: -1 }) // Sort by newest
       .toArray();
+    console.log("Successfully fetched open trades.");
 
-    // Fetch Historical Trades
+    console.log("Fetching historical trades...");
     const historicalTrades = await db.collection<IHistoricalTrade>("historical_trades")
       .find({})
       .sort({ closedTime: -1 })
       .limit(20) // Limit to 20 for the main view
       .toArray();
+    console.log("Successfully fetched historical trades.");
 
-    // Fetch Config
+    console.log("Fetching configuration...");
     const config = await db.collection("configuration").findOne({});
+    console.log("Successfully fetched configuration.");
 
     return NextResponse.json({ 
       openTrades, 

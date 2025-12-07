@@ -18,14 +18,23 @@ if (process.env.NODE_ENV === 'development') {
   };
 
   if (!globalWithMongo._mongoClientPromise) {
+    console.log("Creating new MongoDB client connection...");
     client = new MongoClient(uri, options);
     globalWithMongo._mongoClientPromise = client.connect();
+  } else {
+    console.log("Reusing existing MongoDB client connection...");
   }
   clientPromise = globalWithMongo._mongoClientPromise;
 } else {
   // In production, normal connection.
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
+  try {
+    console.log("Creating new MongoDB client connection for production...");
+    client = new MongoClient(uri, options);
+    clientPromise = client.connect();
+  } catch (e) {
+    console.error("Error connecting to MongoDB in production:", e);
+    throw e; // re-throw the error to be handled by the caller
+  }
 }
 
 export default clientPromise;

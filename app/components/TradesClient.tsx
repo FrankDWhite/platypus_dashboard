@@ -108,7 +108,8 @@ const QuickChartOverlay = ({
                   contentStyle={{ backgroundColor: '#171717', borderColor: '#262626', color: '#fff', borderRadius: '8px' }}
                   itemStyle={{ color: '#fff' }}
                   labelStyle={{ display: 'none' }}
-                  formatter={(value: number) => [formatCurrency(value), "Price"]}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  formatter={(value: any) => [value !== undefined && typeof value === 'number' ? formatCurrency(value) : 'N/A', "Price"]}
                 />
                 <ReferenceLine y={trade.purchasePrice} stroke="#525252" strokeDasharray="3 3" label={{ position: 'right',  value: 'Avg', fill: '#525252', fontSize: 10 }} />
                 <Area 

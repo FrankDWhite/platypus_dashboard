@@ -25,8 +25,8 @@ const TrendingUpIcon = () => (
 const TrendingDownIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>
 );
-const ClockIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+const ChevronLeftIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
 );
 
 const formatCurrency = (val: number) => {
@@ -43,94 +43,129 @@ const formatPercent = (val: number) => {
 };
 
 
-const QuickChartOverlay = ({ 
+const TradeDetailView = ({ 
   trade, 
   datapoints, 
-  visible 
+  onClose,
 }: { 
   trade: IOpenTrade | IHistoricalTrade; 
   datapoints: ITradeDatapoint[]; 
-  visible: boolean 
+  onClose: () => void;
 }) => {
-  if (!visible || !trade) return null;
+  if (!trade) return null;
 
   const latestPrice = datapoints.length > 0 ? datapoints[datapoints.length - 1].currentPrice : trade.purchasePrice;
   const startPrice = trade.purchasePrice;
   const isProfit = latestPrice >= startPrice;
-  const color = isProfit ? "#10b981" : "#ef4444"; // emerald-500 : rose-500
+  const color = isProfit ? "#10b981" : "#ef4444"; 
+  const profitLoss = (latestPrice - startPrice) * trade.quantity;
+  const profitLossPercent = ((latestPrice - startPrice) / startPrice) * 100;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in touch-none">
-      <div className="w-full max-w-lg bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden transform transition-all">
-        <div className="p-4 border-b border-neutral-800 flex justify-between items-start bg-neutral-800/30">
-          <div>
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              {trade.ticker}
-              <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-neutral-700 text-neutral-300">
-                {trade.quantity} shares
-              </span>
-            </h3>
-            <p className="text-sm text-neutral-400 mt-1">{trade.description}</p>
+    <div className="fixed inset-0 z-50 bg-black flex flex-col animate-fade-in overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-neutral-800 bg-neutral-900/50 backdrop-blur-md">
+        <button 
+          onClick={onClose}
+          className="p-2 -ml-2 rounded-full hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
+        >
+          <ChevronLeftIcon />
+        </button>
+        <span className="font-semibold text-white tracking-wide">{trade.ticker}</span>
+        <div className="w-8" /> {/* Spacer for centering */}
+      </div>
+
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-20">
+        {/* Main Price Header */}
+        <div className="pt-8 pb-4 px-6 text-center">
+          <h1 className={`text-4xl font-bold font-mono tracking-tight mb-2 ${isProfit ? 'text-emerald-400' : 'text-rose-400'}`}>
+            {formatCurrency(latestPrice)}
+          </h1>
+          <div className={`flex items-center justify-center gap-2 text-sm font-medium ${isProfit ? 'text-emerald-500' : 'text-rose-500'}`}>
+            <span className="flex items-center">
+              {isProfit ? <TrendingUpIcon /> : <TrendingDownIcon />}
+            </span>
+            <span>{formatCurrency(Math.abs(profitLoss))} ({formatPercent(profitLossPercent)})</span>
           </div>
-          <div className="text-right">
-            <p className={`text-xl font-bold font-mono ${isProfit ? 'text-emerald-400' : 'text-rose-400'}`}>
-              {formatCurrency(latestPrice)}
-            </p>
-            <p className={`text-xs font-medium ${isProfit ? 'text-emerald-500' : 'text-rose-500'}`}>
-              {isProfit ? '▲' : '▼'} {formatPercent(((latestPrice - startPrice) / startPrice) * 100)}
-            </p>
-          </div>
+          <p className="text-neutral-500 text-xs mt-2 uppercase tracking-wider">Total Return</p>
         </div>
-        
-        <div className="h-64 w-full bg-neutral-900 relative">
+
+        {/* Chart Section - Scrubbable */}
+        <div className="h-80 w-full relative my-4 touch-none">
           {datapoints.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={datapoints} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+              <AreaChart data={datapoints} margin={{ top: 20, right: 0, left: 0, bottom: 0 }}>
                 <defs>
-                  <linearGradient id={`colorGradient-${trade.trade_id}`} x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id={`gradientDetail-${trade.trade_id}`} x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor={color} stopOpacity={0.3}/>
                     <stop offset="95%" stopColor={color} stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#262626" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#262626" vertical={false} horizontal={true} />
                 <XAxis 
                   dataKey="timestamp" 
                   hide={true} 
                 />
                 <YAxis 
                   domain={['auto', 'auto']} 
-                  tick={{fill: '#525252', fontSize: 10}}
-                  tickFormatter={(val) => `$${val.toFixed(0)}`}
-                  axisLine={false}
-                  tickLine={false}
+                  hide={true}
                 />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#171717', borderColor: '#262626', color: '#fff', borderRadius: '8px' }}
-                  itemStyle={{ color: '#fff' }}
-                  labelStyle={{ display: 'none' }}
+                  cursor={{ stroke: '#525252', strokeWidth: 1, strokeDasharray: '4 4' }}
+                  contentStyle={{ backgroundColor: '#171717', borderColor: '#262626', color: '#fff', borderRadius: '12px', padding: '8px 12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)' }}
+                  itemStyle={{ color: '#fff', fontWeight: 600, fontFamily: 'monospace' }}
+                  labelStyle={{ color: '#a3a3a3', fontSize: '11px', marginBottom: '4px' }}
+                  labelFormatter={(value) => new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' })}
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   formatter={(value: any) => [value !== undefined && typeof value === 'number' ? formatCurrency(value) : 'N/A', "Price"]}
                 />
-                <ReferenceLine y={trade.purchasePrice} stroke="#525252" strokeDasharray="3 3" label={{ position: 'right',  value: 'Avg', fill: '#525252', fontSize: 10 }} />
+                <ReferenceLine y={trade.purchasePrice} stroke="#525252" strokeDasharray="3 3" label={{ position: 'insideRight',  value: 'Avg', fill: '#525252', fontSize: 10 }} />
                 <Area 
                   type="monotone" 
                   dataKey="currentPrice" 
                   stroke={color} 
-                  strokeWidth={2}
+                  strokeWidth={3}
                   fillOpacity={1} 
-                  fill={`url(#colorGradient-${trade.trade_id})`} 
-                  animationDuration={500}
+                  fill={`url(#gradientDetail-${trade.trade_id})`} 
+                  activeDot={{ r: 6, strokeWidth: 0, fill: '#fff' }}
                 />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-full text-neutral-500 text-sm">
-              No chart data available
+            <div className="flex flex-col items-center justify-center h-full text-neutral-600 gap-2">
+              <div className="w-8 h-8 border-2 border-neutral-800 border-t-neutral-600 rounded-full animate-spin"></div>
+              <span className="text-sm">Loading chart data...</span>
             </div>
           )}
         </div>
-        <div className="p-3 bg-neutral-800/30 text-center text-xs text-neutral-500">
-          Hold to keep viewing • Release to close
+
+        {/* Trade Details Cards */}
+        <div className="px-4 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-neutral-900 p-4 rounded-xl border border-neutral-800">
+              <p className="text-xs text-neutral-500 mb-1">Your Average</p>
+              <p className="text-lg font-mono text-white">{formatCurrency(trade.purchasePrice)}</p>
+            </div>
+            <div className="bg-neutral-900 p-4 rounded-xl border border-neutral-800">
+              <p className="text-xs text-neutral-500 mb-1">Shares Owned</p>
+              <p className="text-lg font-mono text-white">{trade.quantity}</p>
+            </div>
+            <div className="bg-neutral-900 p-4 rounded-xl border border-neutral-800">
+              <p className="text-xs text-neutral-500 mb-1">Total Equity</p>
+              <p className="text-lg font-mono text-white">{formatCurrency(latestPrice * trade.quantity)}</p>
+            </div>
+            <div className="bg-neutral-900 p-4 rounded-xl border border-neutral-800">
+              <p className="text-xs text-neutral-500 mb-1">Date Opened</p>
+              <p className="text-sm font-mono text-white mt-1">{new Date(trade.openedTime).toLocaleDateString()}</p>
+            </div>
+          </div>
+
+          <div className="bg-neutral-900 p-4 rounded-xl border border-neutral-800 mt-4">
+            <p className="text-xs text-neutral-500 mb-2 uppercase tracking-wide">Strategy Description</p>
+            <p className="text-sm text-neutral-300 leading-relaxed">
+              {trade.description}
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -140,84 +175,59 @@ const QuickChartOverlay = ({
 const TradeCard = ({ 
   trade, 
   latestPrice, 
-  onPressStart, 
-  onPressEnd 
+  onClick 
 }: { 
   trade: IOpenTrade | IHistoricalTrade; 
   latestPrice?: number;
-  onPressStart: (trade: IOpenTrade | IHistoricalTrade) => void;
-  onPressEnd: () => void;
+  onClick: (trade: IOpenTrade | IHistoricalTrade) => void;
 }) => {
   const isHistorical = 'soldPrice' in trade;
-  
   const currentVal = isHistorical ? (trade as IHistoricalTrade).soldPrice : (latestPrice || trade.purchasePrice);
   const profitLoss = (currentVal - trade.purchasePrice) * trade.quantity;
   const profitLossPercent = ((currentVal - trade.purchasePrice) / trade.purchasePrice) * 100;
   const isProfit = profitLoss >= 0;
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    onPressStart(trade);
-  };
-
-  const handleMouseDown = () => {
-    onPressStart(trade);
-  };
-
   return (
     <div 
-      className="group relative bg-neutral-900 hover:bg-neutral-800 rounded-xl p-4 mb-3 border border-neutral-800 transition-all duration-200 active:scale-[0.98] select-none cursor-pointer"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={onPressEnd}
-      onMouseDown={handleMouseDown}
-      onMouseUp={onPressEnd}
-      onMouseLeave={onPressEnd}
-      onContextMenu={(e) => e.preventDefault()}
+      className="bg-neutral-900 hover:bg-neutral-800/80 active:bg-neutral-800 rounded-xl p-5 mb-3 border border-neutral-800 transition-all duration-200 cursor-pointer touch-manipulation shadow-sm"
+      onClick={() => onClick(trade)}
     >
-      <div className="flex justify-between items-start mb-2">
+      <div className="flex justify-between items-start mb-3">
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${isProfit ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+          <div className={`p-2.5 rounded-xl ${isProfit ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
             {isProfit ? <TrendingUpIcon /> : <TrendingDownIcon />}
           </div>
           <div>
-            <h4 className="font-bold text-white text-lg">{trade.ticker}</h4>
-            <span className="text-xs text-neutral-500 font-medium px-2 py-0.5 bg-neutral-800 rounded-md border border-neutral-700">
-              {isHistorical ? 'CLOSED' : 'OPEN'}
-            </span>
+            <h4 className="font-bold text-white text-xl tracking-tight">{trade.ticker}</h4>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${isHistorical ? 'border-neutral-700 text-neutral-500' : 'border-neutral-600 text-neutral-400'}`}>
+                {isHistorical ? 'CLOSED' : 'OPEN'}
+              </span>
+              <span className="text-xs text-neutral-500">{trade.quantity} shares</span>
+            </div>
           </div>
         </div>
         <div className="text-right">
           <div className={`font-mono font-bold text-lg ${isProfit ? 'text-emerald-400' : 'text-rose-400'}`}>
             {profitLoss > 0 ? '+' : ''}{formatCurrency(profitLoss)}
           </div>
-          <div className={`text-xs font-medium ${isProfit ? 'text-emerald-500/80' : 'text-rose-500/80'}`}>
+          <div className={`text-xs font-medium mt-0.5 ${isProfit ? 'text-emerald-500/80' : 'text-rose-500/80'}`}>
             {formatPercent(profitLossPercent)}
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mt-4 pt-3 border-t border-neutral-800/50">
+      <div className="flex items-center justify-between pt-3 border-t border-neutral-800/50">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-neutral-500">Entry Price</p>
-          <p className="text-sm font-mono text-neutral-300">{formatCurrency(trade.purchasePrice)}</p>
+           <p className="text-[10px] text-neutral-500 uppercase tracking-wider mb-0.5">Current</p>
+           <p className="text-sm font-mono text-neutral-200">
+             {latestPrice || isHistorical ? formatCurrency(currentVal) : <span className="animate-pulse">...</span>}
+           </p>
         </div>
         <div className="text-right">
-          <p className="text-[10px] uppercase tracking-wider text-neutral-500">
-            {isHistorical ? 'Exit Price' : 'Current Price'}
-          </p>
-          <p className="text-sm font-mono text-neutral-300">
-            {latestPrice || isHistorical ? formatCurrency(currentVal) : <span className="animate-pulse">...</span>}
-          </p>
+           <p className="text-[10px] text-neutral-500 uppercase tracking-wider mb-0.5">Entry</p>
+           <p className="text-sm font-mono text-neutral-400">{formatCurrency(trade.purchasePrice)}</p>
         </div>
-      </div>
-      
-      <div className="mt-3 flex items-center gap-1 text-xs text-neutral-600">
-        <ClockIcon />
-        <span>Opened {new Date(trade.openedTime).toLocaleDateString()}</span>
-      </div>
-      
-      {/* Hint for interaction */}
-      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="bg-neutral-800 text-[10px] text-neutral-400 px-2 py-1 rounded">Hold to view chart</div>
       </div>
     </div>
   );
@@ -235,9 +245,7 @@ export default function TradesClient() {
 
   const [activeTrade, setActiveTrade] = useState<IOpenTrade | IHistoricalTrade | null>(null);
   const [activeDatapoints, setActiveDatapoints] = useState<ITradeDatapoint[]>([]);
-  const [isOverlayVisible, setIsOverlayVisible] = useState(false);
-  
-  const pressTimer = useRef<NodeJS.Timeout | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   useEffect(() => {
     async function loadTrades() {
@@ -283,6 +291,7 @@ export default function TradesClient() {
   };
 
   const loadChartData = async (trade: IOpenTrade | IHistoricalTrade) => {
+    setActiveDatapoints([]);
     try {
       const res = await fetch(`/api/datapoints/${trade.trade_id}`);
       if (res.ok) {
@@ -295,24 +304,22 @@ export default function TradesClient() {
   };
 
 
-  const handlePressStart = (trade: IOpenTrade | IHistoricalTrade) => {
-    if (pressTimer.current) clearTimeout(pressTimer.current);
-
-    pressTimer.current = setTimeout(() => {
-      setActiveTrade(trade);
-      setIsOverlayVisible(true);
-      loadChartData(trade);
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(50); 
-      }
-    }, 200); 
+  const handleCardClick = (trade: IOpenTrade | IHistoricalTrade) => {
+    setActiveTrade(trade);
+    setIsDetailOpen(true);
+    loadChartData(trade);
+    
+    // Prevent background scrolling when modal is open
+    document.body.style.overflow = 'hidden';
   };
 
-  const handlePressEnd = () => {
-    if (pressTimer.current) clearTimeout(pressTimer.current);
-    setIsOverlayVisible(false);
+  const handleCloseDetail = () => {
+    setIsDetailOpen(false);
+    setTimeout(() => setActiveTrade(null), 300); // Wait for animation
+    document.body.style.overflow = 'unset';
   };
 
+  // Calculate Totals
   const totalOpenPL = useMemo(() => {
     return openTrades.reduce((acc, trade) => {
       const current = currentPrices[trade.trade_id] || trade.purchasePrice;
@@ -344,30 +351,31 @@ export default function TradesClient() {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto min-h-screen pb-20 relative select-none">
+    // Updated Main Container: Removed max-w-md, added max-w-xl for better tablet support, reduced padding for mobile
+    <div className="w-full max-w-xl mx-auto min-h-screen pb-20 relative select-none bg-black">
       
       {/* Header / Summary Card */}
-      <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-md border-b border-neutral-800 p-4 pt-12 pb-4 mb-4">
-        <h1 className="text-sm font-medium text-neutral-400 mb-1">Total Portfolio Value</h1>
-        <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-bold text-white tracking-tight">
+      <div className="sticky top-0 z-30 bg-black/80 backdrop-blur-md border-b border-neutral-800 p-5 pt-12 pb-5 mb-4">
+        <h1 className="text-xs font-semibold text-neutral-500 uppercase tracking-widest mb-2">Total Portfolio Value</h1>
+        <div className="flex items-baseline gap-3">
+          <span className="text-4xl font-bold text-white tracking-tight">
             {formatCurrency(portfolioValue)}
           </span>
         </div>
-        <div className="mt-1 flex items-center gap-2">
-          <span className={`text-sm font-medium px-1.5 py-0.5 rounded ${totalOpenPL >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
+        <div className="mt-2 flex items-center gap-2">
+          <span className={`text-sm font-bold px-2 py-0.5 rounded-md ${totalOpenPL >= 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
             {totalOpenPL >= 0 ? '+' : ''}{formatCurrency(totalOpenPL)}
           </span>
-          <span className="text-xs text-neutral-500">Open P/L</span>
+          <span className="text-xs text-neutral-500 font-medium">Open P/L</span>
         </div>
       </div>
 
-      <div className="px-4">
+      <div className="px-3 md:px-4">
         {/* System Status Integration */}
         {systemConfig && <SystemStatus systemConfig={systemConfig} />}
 
         {/* Open Trades Section */}
-        <div className="mb-8">
+        <div className="mb-8 mt-6">
           <h2 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4 ml-1">Open Positions</h2>
           {openTrades.length === 0 ? (
             <p className="text-neutral-600 text-sm italic ml-1">No open positions.</p>
@@ -377,8 +385,7 @@ export default function TradesClient() {
                 key={trade.trade_id} 
                 trade={trade} 
                 latestPrice={currentPrices[trade.trade_id]}
-                onPressStart={handlePressStart}
-                onPressEnd={handlePressEnd}
+                onClick={handleCardClick}
               />
             ))
           )}
@@ -391,24 +398,23 @@ export default function TradesClient() {
             <TradeCard 
               key={trade.trade_id} 
               trade={trade} 
-              onPressStart={handlePressStart}
-              onPressEnd={handlePressEnd}
+              onClick={handleCardClick}
             />
           ))}
         </div>
         
-        <div className="text-center text-xs text-neutral-700 py-8 pb-24">
-          <p>Press and hold any trade card to inspect performance.</p>
-          <p className="mt-2">Platypus Dashboard v2.0</p>
+        <div className="text-center text-xs text-neutral-800 py-8 pb-24">
+          <p>Tap any trade to view details and performance.</p>
+          <p className="mt-2">Platypus Dashboard v2.1</p>
         </div>
       </div>
 
-      {/* Chart Overlay */}
-      {activeTrade && (
-        <QuickChartOverlay 
+      {/* Full Screen Detail Modal */}
+      {isDetailOpen && activeTrade && (
+        <TradeDetailView 
           trade={activeTrade} 
           datapoints={activeDatapoints} 
-          visible={isOverlayVisible} 
+          onClose={handleCloseDetail} 
         />
       )}
     </div>

@@ -1,0 +1,35 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(2, 2)">
+    
+    <path d="M50 24 L56 22 L60 28 L56 34 L50 32 Z M44 25 L50 24 L50 32 L44 31 Z" fill="#7C3AED" stroke="#8B5CF6" stroke-width="1">
+      <animate attributeName="stroke-opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite" />
+    </path>
+    <circle cx="50" cy="28" r="1.5" fill="#C4B5FD">
+       <animate attributeName="fill-opacity" values="0.6;1;0.6" dur="1s" repeatCount="indefinite" />
+    </circle>
+
+    <path d="M20 24 C18 18 38 18 44 22 C48 26 48 30 44 34 C38 38 18 38 20 32 C20 30 19 28 20 24 Z" fill="#2563EB" fill-opacity="0.9" stroke="#3B82F6" stroke-width="1.5"/>
+    <path d="M24 26 L32 24 M32 24 L40 26 M40 26 L38 30 M38 30 L34 32 M34 32 L28 32 M28 32 L24 30 M24 30 L24 26 Z M28 26 L36 26 M30 28 L34 28 M28 30 L36 30" stroke="#93C5FD" stroke-width="1" stroke-linecap="square" opacity="0.7"/>
+    <circle cx="28" cy="28" r="1" fill="#FDE047">
+        <animate attributeName="r" values="1;1.5;1" dur="2s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="36" cy="28" r="1" fill="#FDE047">
+        <animate attributeName="r" values="1;1.5;1" dur="2s" repeatCount="indefinite" />
+    </circle>
+    
+    <path d="M34 34 L32 40 L30 44 M32 40 L34 44 M34 40 L38 44" stroke="#10B981" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M31 44 L33 46 L35 44 M35 44 L37 46 L39 44" fill="#34D399" stroke="#6EE7B7" stroke-width="1"/>
+
+    <path d="M22 34 L24 40 L26 44 M24 40 L22 44 M24 40 L20 44" stroke="#10B981" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M19 44 L21 46 L23 44 M23 44 L25 46 L27 44" fill="#34D399" stroke="#6EE7B7" stroke-width="1"/>
+    
+    <path d="M14 22 L6 24 L6 32 L14 34 L18 30 L18 26 Z" fill="#F59E0B" stroke="#FBBF24" stroke-width="1.5">
+        <animate attributeName="fill-opacity" values="0.9;1;0.9" dur="1.5s" repeatCount="indefinite" />
+    </path>
+    <path d="M8 26 L12 26 M8 28 L12 28 M8 30 L12 30" stroke="#FCD34D" stroke-width="1" opacity="0.8"/>
+    
+    <circle cx="16" cy="24" r="1.5" fill="#DC2626" stroke="#F87171" stroke-width="0.5">
+      <animate attributeName="fill" values="#DC2626;#EF4444;#DC2626" dur="0.8s" repeatCount="indefinite" />
+    </circle>
+  </g>
+</svg>

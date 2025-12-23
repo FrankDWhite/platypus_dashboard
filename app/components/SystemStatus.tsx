@@ -7,31 +7,37 @@ export default function SystemStatus({
 }: {
   systemConfig: ISystemConfig;
 }) {
+  const isHealthy = systemConfig.status === "active";
+
   return (
-    <div className="bg-gray-800 p-4 rounded-lg">
-      <h2 className="text-xl font-semibold text-white mb-4">
-        System Status
-      </h2>
-      <div className="grid grid-cols-2 gap-4 text-sm">
+    <div className="w-full bg-neutral-900/50 backdrop-blur-sm border border-neutral-800 rounded-xl p-4 mb-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className={`relative flex h-3 w-3`}>
+            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isHealthy ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
+            <span className={`relative inline-flex rounded-full h-3 w-3 ${isHealthy ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
+          </div>
+          <span className="text-sm font-medium text-neutral-400 uppercase tracking-wider">System Status</span>
+        </div>
+        <span className={`text-sm font-bold ${isHealthy ? 'text-emerald-400' : 'text-rose-400'}`}>
+          {systemConfig.status.toUpperCase()}
+        </span>
+      </div>
+      
+      <div className="mt-4 pt-4 border-t border-neutral-800 flex justify-between items-end">
         <div>
-          <p className="text-gray-400">Status:</p>
-          <p
-            className={`text-${
-              systemConfig.status === "active" ? "green" : "red"
-            }-500`}
-          >
-            {systemConfig.status}
+          <p className="text-xs text-neutral-500 mb-1">Last Updated</p>
+          <p className="text-xs font-mono text-neutral-300">
+            {new Date(systemConfig.lastUpdated).toLocaleString(undefined, {
+              month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            })}
           </p>
         </div>
-        <div>
-          <p className="text-gray-400">Profit YTD:</p>
-          <p className="text-white">${systemConfig.profitYTD.toLocaleString()}</p>
-        </div>
-        <div>
-          <p className="text-gray-400">Last Updated:</p>
-          <p className="text-white">
-            {new Date(systemConfig.lastUpdated).toLocaleString()}
-          </p>
+        <div className="text-right">
+           <p className="text-xs text-neutral-500 mb-1">YTD Profit</p>
+           <p className={`text-lg font-bold font-mono ${systemConfig.profitYTD >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+             {systemConfig.profitYTD >= 0 ? '+' : ''}${systemConfig.profitYTD.toLocaleString()}
+           </p>
         </div>
       </div>
     </div>

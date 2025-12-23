@@ -2,7 +2,7 @@ import TradesClient from "./components/TradesClient";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24 bg-black">
+    <main className="min-h-screen bg-black w-full">
       <TradesClient />
     </main>
   );

@@ -42,6 +42,36 @@ const formatPercent = (val: number) => {
   return `${val >= 0 ? '+' : ''}${val.toFixed(2)}%`;
 };
 
+const getOrdinalNum = (n: number) => {
+  return n + (n > 0 ? ['th', 'st', 'nd', 'rd'][(n > 3 && n < 21) || n % 10 > 3 ? 0 : n % 10] : '');
+};
+
+const formatDateTimeCentral = (dateInput: Date | string) => {
+  const date = new Date(dateInput);
+  const options: Intl.DateTimeFormatOptions = {
+    timeZone: 'America/Chicago',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: true,
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric'
+  };
+  
+  const formatter = new Intl.DateTimeFormat('en-US', options);
+  const parts = formatter.formatToParts(date);
+  
+  const part = (type: string) => parts.find(p => p.type === type)?.value || '';
+  
+  const time = `${part('hour')}:${part('minute')} ${part('dayPeriod')}`;
+  const weekday = part('weekday');
+  const month = part('month');
+  const day = part('day');
+  const dayWithSuffix = getOrdinalNum(parseInt(day, 10));
+  
+  return `${time} ${weekday}, ${month} ${dayWithSuffix}`;
+};
+
 
 const TradeDetailView = ({ 
   trade, 
@@ -156,8 +186,14 @@ const TradeDetailView = ({
             </div>
             <div className="bg-neutral-900 p-4 rounded-xl border border-neutral-800">
               <p className="text-xs text-neutral-500 mb-1">Date Opened</p>
-              <p className="text-sm font-mono text-white mt-1">{new Date(trade.openedTime).toLocaleDateString()}</p>
+              <p className="text-sm font-mono text-white mt-1">{formatDateTimeCentral(trade.openedTime)}</p>
             </div>
+            {'closedTime' in trade && (
+              <div className="bg-neutral-900 p-4 rounded-xl border border-neutral-800">
+                <p className="text-xs text-neutral-500 mb-1">Date Closed</p>
+                <p className="text-sm font-mono text-white mt-1">{formatDateTimeCentral((trade as IHistoricalTrade).closedTime)}</p>
+              </div>
+            )}
           </div>
 
           <div className="bg-neutral-900 p-4 rounded-xl border border-neutral-800 mt-4">
@@ -219,14 +255,22 @@ const TradeCard = ({
 
       <div className="flex items-center justify-between pt-3 border-t border-neutral-800/50">
         <div>
-           <p className="text-[10px] text-neutral-500 uppercase tracking-wider mb-0.5">Current</p>
+           <p className="text-[10px] text-neutral-500 uppercase tracking-wider mb-0.5">{isHistorical ? 'Closed' : 'Current'}</p>
            <p className="text-sm font-mono text-neutral-200">
              {latestPrice || isHistorical ? formatCurrency(currentVal) : <span className="animate-pulse">...</span>}
            </p>
+           {isHistorical && (
+             <p className="text-[10px] text-neutral-500 mt-1">
+               {formatDateTimeCentral((trade as IHistoricalTrade).closedTime)}
+             </p>
+           )}
         </div>
         <div className="text-right">
            <p className="text-[10px] text-neutral-500 uppercase tracking-wider mb-0.5">Entry</p>
            <p className="text-sm font-mono text-neutral-400">{formatCurrency(trade.purchasePrice)}</p>
+           <p className="text-[10px] text-neutral-500 mt-1">
+             {formatDateTimeCentral(trade.openedTime)}
+           </p>
         </div>
       </div>
     </div>

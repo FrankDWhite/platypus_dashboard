@@ -21,7 +21,6 @@ export async function GET() {
     const historicalTrades = await db.collection<IHistoricalTrade>("historical_trades")
       .find({})
       .sort({ closedTime: -1 })
-      .limit(20) // Limit to 20 for the main view
       .toArray();
     console.error("Successfully fetched historical trades.");
 

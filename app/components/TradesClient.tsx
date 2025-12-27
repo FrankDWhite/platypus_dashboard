@@ -327,6 +327,12 @@ export default function TradesClient() {
     }, 0);
   }, [openTrades, currentPrices]);
 
+  const historicalPL = useMemo(() => {
+    return historicalTrades.reduce((acc, trade) => {
+      return acc + ((trade.soldPrice - trade.purchasePrice) * trade.quantity);
+    }, 0);
+  }, [historicalTrades]);
+
   const portfolioValue = useMemo(() => {
     return openTrades.reduce((acc, trade) => {
       const current = currentPrices[trade.trade_id] || trade.purchasePrice;
@@ -367,6 +373,12 @@ export default function TradesClient() {
             {totalOpenPL >= 0 ? '+' : ''}{formatCurrency(totalOpenPL)}
           </span>
           <span className="text-xs text-neutral-500 font-medium">Open P/L</span>
+        </div>
+        <div className="mt-2 flex items-center gap-2">
+          <span className={`text-sm font-bold px-2 py-0.5 rounded-md ${historicalPL >= 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
+            {historicalPL >= 0 ? '+' : ''}{formatCurrency(historicalPL)}
+          </span>
+          <span className="text-xs text-neutral-500 font-medium">Historical P/L</span>
         </div>
       </div>
 

@@ -41,7 +41,7 @@ export interface ISystemConfig {
 export interface ILongPosition {
   symbol: string; // The ticker for the long equity position
   quantity: number; // number of shares owned 
-  costBasis: number; // investment before any unrealized gain/loss
+  costBasis: number; // investment before any unrealized gain/loss (PER SHARE)
   percentChange: number; // profit or loss on the position (percentage)
   totalValue: number; // total investment value now
 }

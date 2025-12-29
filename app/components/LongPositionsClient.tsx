@@ -33,10 +33,8 @@ const LongPositionCard = ({
   position: ILongPosition; 
 }) => {
   const isProfit = position.percentChange >= 0;
-  // Calculate P/L in dollars based on totalValue and costBasis if not provided explicitly.
-  // Interface has totalValue and costBasis.
-  // totalValue = current value. costBasis = original investment.
-  const profitLossDollars = position.totalValue - position.costBasis;
+  const totalCost = position.costBasis * position.quantity;
+  const profitLossDollars = position.totalValue - totalCost;
 
   return (
     <div 

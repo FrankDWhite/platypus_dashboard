@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
+import Link from "next/link";
 import {
   AreaChart,
   Area,
@@ -406,7 +407,12 @@ export default function TradesClient() {
       
       {/* Header / Summary Card */}
       <div className="sticky top-0 z-30 bg-black/80 backdrop-blur-md border-b border-neutral-800 p-5 pt-12 pb-5 mb-4">
-        <h1 className="text-xs font-semibold text-neutral-500 uppercase tracking-widest mb-2">Total Portfolio Value</h1>
+        <div className="flex justify-between items-center mb-2">
+          <h1 className="text-xs font-semibold text-neutral-500 uppercase tracking-widest">Total Portfolio Value</h1>
+          <Link href="/long-positions" className="text-[10px] font-bold text-emerald-500 hover:text-emerald-400 uppercase tracking-widest border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 rounded transition-colors">
+            Longs &rarr;
+          </Link>
+        </div>
         <div className="flex items-baseline gap-3">
           <span className="text-4xl font-bold text-white tracking-tight">
             {formatCurrency(portfolioValue)}

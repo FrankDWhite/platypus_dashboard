@@ -37,3 +37,11 @@ export interface ISystemConfig {
   profitYTD: number;
   lastUpdated: Date;
 }
+
+export interface ILongPosition {
+  symbol: string; // The ticker for the long equity position
+  quantity: number; // number of shares owned 
+  costBasis: number; // investment before any unrealized gain/loss
+  percentChange: number; // profit or loss on the position (percentage)
+  totalValue: number; // total investment value now
+}

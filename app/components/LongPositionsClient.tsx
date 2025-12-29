@@ -105,7 +105,7 @@ export default function LongPositionsClient() {
   }, [positions]);
 
   const totalCostBasis = useMemo(() => {
-    return positions.reduce((acc, pos) => acc + pos.costBasis, 0);
+    return positions.reduce((acc, pos) => acc + (pos.costBasis * pos.quantity), 0);
   }, [positions]);
   
   const totalPL = totalValue - totalCostBasis;

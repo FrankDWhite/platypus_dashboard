@@ -178,7 +178,7 @@ const TradeDetailView = ({
               <p className="text-lg font-mono text-white">{formatCurrency(trade.purchasePrice)}</p>
             </div>
             <div className="bg-neutral-900 p-4 rounded-xl border border-neutral-800">
-              <p className="text-xs text-neutral-500 mb-1">Shares Owned</p>
+              <p className="text-xs text-neutral-500 mb-1">Contracts Owned</p>
               <p className="text-lg font-mono text-white">{trade.quantity}</p>
             </div>
             <div className="bg-neutral-900 p-4 rounded-xl border border-neutral-800">
@@ -235,12 +235,12 @@ const TradeCard = ({
             {isProfit ? <TrendingUpIcon /> : <TrendingDownIcon />}
           </div>
           <div>
-            <h4 className="font-bold text-white text-xl tracking-tight">{trade.ticker}</h4>
+            <h4 className="font-bold text-white text-xl tracking-tight">{trade.ticker} {trade.strikePrice} {trade.optionType}</h4>
             <div className="flex items-center gap-2 mt-0.5">
               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${isHistorical ? 'border-neutral-700 text-neutral-500' : 'border-neutral-600 text-neutral-400'}`}>
                 {isHistorical ? 'CLOSED' : 'OPEN'}
               </span>
-              <span className="text-xs text-neutral-500">{trade.quantity} shares</span>
+              <span className="text-xs text-neutral-500">{trade.quantity} contracts</span>
             </div>
           </div>
         </div>

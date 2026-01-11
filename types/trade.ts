@@ -12,6 +12,9 @@ export interface IOpenTrade {
   purchasePrice: number;
   changePercent: number; //this will remain 0 until the trade is closed. rely on combination of the latest TradeDatapoint and purchasePrice for latest P/L
   changeDollars: number; //this will remain 0 until the trade is closed. rely on combination of the latest TradeDatapoint and purchasePrice for latest P/L
+  expirationDate?: Date;
+  strikePrice?: number;
+  optionType?: string;
 }
 
 export interface IHistoricalTrade extends IOpenTrade {

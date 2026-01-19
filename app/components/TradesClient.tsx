@@ -240,7 +240,7 @@ const TradeCard = ({
               <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${isHistorical ? 'border-neutral-700 text-neutral-500' : 'border-neutral-600 text-neutral-400'}`}>
                 {isHistorical ? 'CLOSED' : 'OPEN'}
               </span>
-              <span className="text-xs text-neutral-500">{trade.quantity} contracts</span>
+              <span className="text-xs text-neutral-500">per contract</span>
             </div>
           </div>
         </div>

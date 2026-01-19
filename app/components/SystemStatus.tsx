@@ -33,12 +33,6 @@ export default function SystemStatus({
             })}
           </p>
         </div>
-        <div className="text-right">
-           <p className="text-xs text-neutral-500 mb-1">YTD Profit</p>
-           <p className={`text-lg font-bold font-mono ${systemConfig.profitYTD >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-             {systemConfig.profitYTD >= 0 ? '+' : ''}${systemConfig.profitYTD.toLocaleString()}
-           </p>
-        </div>
       </div>
     </div>
   );

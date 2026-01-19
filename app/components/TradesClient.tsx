@@ -17,6 +17,7 @@ import {
   IHistoricalTrade,
   ITradeDatapoint,
   ISystemConfig,
+  ILongTermPerformance,
 } from "@/types/trade";
 import SystemStatus from "./SystemStatus";
 
@@ -282,7 +283,12 @@ const TradeCard = ({
 export default function TradesClient() {
   const [openTrades, setOpenTrades] = useState<IOpenTrade[]>([]);
   const [historicalTrades, setHistoricalTrades] = useState<IHistoricalTrade[]>([]);
+  const [longTermPerformance, setLongTermPerformance] = useState<ILongTermPerformance | null>(null);
   const [systemConfig, setSystemConfig] = useState<ISystemConfig | null>(null);
+  
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   
   const [currentPrices, setCurrentPrices] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
@@ -295,12 +301,18 @@ export default function TradesClient() {
   useEffect(() => {
     async function loadTrades() {
       try {
-        const res = await fetch("/api/trades");
+        const res = await fetch("/api/trades?page=1&limit=25");
         if (!res.ok) throw new Error("Failed to fetch trades");
         const data = await res.json();
         
         setOpenTrades(data.openTrades);
         setHistoricalTrades(data.historicalTrades);
+        
+        if (data.historicalTrades && data.historicalTrades.length < 25) {
+          setHasMore(false);
+        }
+        
+        setLongTermPerformance(data.longTermPerformance);
         setSystemConfig(data.config || {
           status: "active",
           profitYTD: 3234,
@@ -319,6 +331,33 @@ export default function TradesClient() {
     }
     loadTrades();
   }, []);
+
+  const loadMoreHistory = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    
+    try {
+      const nextPage = page + 1;
+      const res = await fetch(`/api/trades?page=${nextPage}&limit=25`);
+      if (!res.ok) throw new Error("Failed to fetch more trades");
+      const data = await res.json();
+      
+      const newTrades = (data.historicalTrades || []) as IHistoricalTrade[];
+      
+      if (newTrades.length > 0) {
+        setHistoricalTrades(prev => [...prev, ...newTrades]);
+        setPage(nextPage);
+      }
+      
+      if (newTrades.length < 25) {
+        setHasMore(false);
+      }
+    } catch (e) {
+      console.error("Error loading more trades:", e);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const fetchLatestPrice = async (tradeId: string) => {
     try {
@@ -373,10 +412,13 @@ export default function TradesClient() {
   }, [openTrades, currentPrices]);
 
   const historicalPL = useMemo(() => {
+    if (longTermPerformance){ 
+      return longTermPerformance.totalPnlDollars;
+    }
     return historicalTrades.reduce((acc, trade) => {
       return acc + ((trade.soldPrice - trade.purchasePrice) * trade.quantity);
     }, 0);
-  }, [historicalTrades]);
+  }, [historicalTrades, longTermPerformance]);
 
   const portfolioValue = useMemo(() => {
     return openTrades.reduce((acc, trade) => {
@@ -463,6 +505,23 @@ export default function TradesClient() {
               onClick={handleCardClick}
             />
           ))}
+          
+          {hasMore && (
+            <button 
+              onClick={loadMoreHistory}
+              disabled={loadingMore}
+              className="w-full py-3 mt-4 rounded-xl border border-neutral-800 bg-neutral-900/50 text-neutral-400 text-sm font-medium hover:bg-neutral-800 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loadingMore ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-neutral-600 border-t-neutral-400 rounded-full animate-spin"></span>
+                  Loading...
+                </span>
+              ) : (
+                "Load More History"
+              )}
+            </button>
+          )}
         </div>
         
         <div className="text-center text-xs text-neutral-800 py-8 pb-24">

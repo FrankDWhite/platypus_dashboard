@@ -48,3 +48,13 @@ export interface ILongPosition {
   percentChange: number; // profit or loss on the position (percentage)
   totalValue: number; // total investment value now
 }
+
+export interface ILongTermPerformance {
+  totalCapitalTraded: number;
+  totalTrades: number;
+  winningTrades: number;
+  losingTrades: number;
+  winRate: number;
+  totalPnlDollars: number;
+  totalPnlPercent: number;
+}

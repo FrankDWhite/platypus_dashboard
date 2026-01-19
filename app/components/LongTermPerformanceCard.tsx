@@ -39,6 +39,10 @@ export default function LongTermPerformanceCard({
           <p className="text-xs font-mono text-neutral-300">
             {performance.totalTrades}
           </p>
+          <p className="text-xs text-neutral-500 mb-1 mt-3">Avg Entry Price</p>
+          <p className="text-xs font-mono text-neutral-300">
+            {formatCurrency(performance.totalTrades > 0 ? performance.totalCapitalTraded / performance.totalTrades : 0)}
+          </p>
         </div>
         <div className="text-right">
            <p className="text-xs text-neutral-500 mb-1">Total P/L</p>

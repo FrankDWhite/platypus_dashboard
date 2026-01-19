@@ -74,6 +74,18 @@ const formatDateTimeCentral = (dateInput: Date | string) => {
   return `${time} ${weekday}, ${month} ${dayWithSuffix}`;
 };
 
+const isTodayCentral = (dateInput: Date | string) => {
+  const date = new Date(dateInput);
+  const now = new Date();
+  const options: Intl.DateTimeFormatOptions = {
+    timeZone: 'America/Chicago',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric'
+  };
+  const formatter = new Intl.DateTimeFormat('en-US', options);
+  return formatter.format(date) === formatter.format(now);
+};
 
 const TradeDetailView = ({ 
   trade, 
@@ -282,7 +294,7 @@ const TradeCard = ({
 const LongTermPerformanceCard = ({ performance }: { performance: ILongTermPerformance }) => {
   return (
     <div className="bg-neutral-900 rounded-xl p-5 mb-6 border border-neutral-800">
-      <h2 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4">Long Term Performance</h2>
+      <h2 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4">Historical Performance</h2>
       <div className="grid grid-cols-2 gap-4">
         <div>
           <p className="text-xs text-neutral-500 mb-1">Total Trades</p>
@@ -293,7 +305,7 @@ const LongTermPerformanceCard = ({ performance }: { performance: ILongTermPerfor
           <p className="text-lg font-mono text-white">{performance.winRate.toFixed(2)}%</p>
         </div>
         <div>
-          <p className="text-xs text-neutral-500 mb-1">Total P/L ($)</p>
+          <p className="text-xs text-neutral-500 mb-1">Total P/L ($) (Assuming single-contract tracking)</p>
           <p className={`text-lg font-mono ${performance.totalPnlDollars >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
             {performance.totalPnlDollars > 0 ? '+' : ''}{formatCurrency(performance.totalPnlDollars)}
           </p>
@@ -440,14 +452,14 @@ export default function TradesClient() {
     }, 0);
   }, [openTrades, currentPrices]);
 
-  const historicalPL = useMemo(() => {
-    if (longTermPerformance){ 
-      return longTermPerformance.totalPnlDollars;
-    }
+  const todayRealizedPL = useMemo(() => {
     return historicalTrades.reduce((acc, trade) => {
-      return acc + ((trade.soldPrice - trade.purchasePrice) * trade.quantity);
+      if (isTodayCentral(trade.closedTime)) {
+        return acc + ((trade.soldPrice - trade.purchasePrice) * trade.quantity);
+      }
+      return acc;
     }, 0);
-  }, [historicalTrades, longTermPerformance]);
+  }, [historicalTrades]);
 
   const portfolioValue = useMemo(() => {
     return openTrades.reduce((acc, trade) => {
@@ -479,15 +491,10 @@ export default function TradesClient() {
       {/* Header / Summary Card */}
       <div className="sticky top-0 z-30 bg-black/80 backdrop-blur-md border-b border-neutral-800 p-5 pt-12 pb-5 mb-4">
         <div className="flex justify-between items-center mb-2">
-          <h1 className="text-xs font-semibold text-neutral-500 uppercase tracking-widest">Total Portfolio Value</h1>
+          <h1 className="text-xs font-semibold text-neutral-500 uppercase tracking-widest">Platypus Options Signal Dashboard</h1>
           <Link href="/long-positions" className="text-[10px] font-bold text-emerald-500 hover:text-emerald-400 uppercase tracking-widest border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 rounded transition-colors">
             Longs &rarr;
           </Link>
-        </div>
-        <div className="flex items-baseline gap-3">
-          <span className="text-4xl font-bold text-white tracking-tight">
-            {formatCurrency(portfolioValue)}
-          </span>
         </div>
         <div className="mt-2 flex items-center gap-2">
           <span className={`text-sm font-bold px-2 py-0.5 rounded-md ${totalOpenPL >= 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
@@ -496,10 +503,10 @@ export default function TradesClient() {
           <span className="text-xs text-neutral-500 font-medium">Open P/L</span>
         </div>
         <div className="mt-2 flex items-center gap-2">
-          <span className={`text-sm font-bold px-2 py-0.5 rounded-md ${historicalPL >= 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
-            {historicalPL >= 0 ? '+' : ''}{formatCurrency(historicalPL)}
+          <span className={`text-sm font-bold px-2 py-0.5 rounded-md ${todayRealizedPL >= 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
+            {todayRealizedPL >= 0 ? '+' : ''}{formatCurrency(todayRealizedPL)}
           </span>
-          <span className="text-xs text-neutral-500 font-medium">Historical P/L</span>
+          <span className="text-xs text-neutral-500 font-medium">Today</span>
         </div>
       </div>
 

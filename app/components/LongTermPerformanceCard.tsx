@@ -45,7 +45,7 @@ export default function LongTermPerformanceCard({
           </p>
         </div>
         <div className="text-right">
-           <p className="text-xs text-neutral-500 mb-1">Total P/L (Assumes 1 Contract Traded)</p>
+           <p className="text-xs text-neutral-500 mb-1">Total P/L (Assumes 1 Contract/Trade)</p>
            <div className="flex flex-col items-end">
              <p className={`text-lg font-bold font-mono ${performance.totalPnlDollars >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                {performance.totalPnlDollars > 0 ? '' : ''}{formatCurrency(performance.totalPnlDollars)}

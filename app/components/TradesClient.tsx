@@ -20,6 +20,7 @@ import {
   ILongTermPerformance,
 } from "@/types/trade";
 import SystemStatus from "./SystemStatus";
+import LongTermPerformanceCard from "./LongTermPerformanceCard";
 
 const TrendingUpIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
@@ -285,36 +286,6 @@ const TradeCard = ({
            <p className="text-[10px] text-neutral-500 mt-1">
              {formatDateTimeCentral(trade.openedTime)}
            </p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const LongTermPerformanceCard = ({ performance }: { performance: ILongTermPerformance }) => {
-  return (
-    <div className="bg-neutral-900 rounded-xl p-5 mb-6 border border-neutral-800">
-      <h2 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4">Historical Performance</h2>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-xs text-neutral-500 mb-1">Total Trades</p>
-          <p className="text-lg font-mono text-white">{performance.totalTrades}</p>
-        </div>
-        <div>
-          <p className="text-xs text-neutral-500 mb-1">Win Rate</p>
-          <p className="text-lg font-mono text-white">{performance.winRate.toFixed(2)}%</p>
-        </div>
-        <div>
-          <p className="text-xs text-neutral-500 mb-1">Total P/L ($) (Assuming single-contract tracking)</p>
-          <p className={`text-lg font-mono ${performance.totalPnlDollars >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-            {performance.totalPnlDollars > 0 ? '+' : ''}{formatCurrency(performance.totalPnlDollars)}
-          </p>
-        </div>
-        <div>
-          <p className="text-xs text-neutral-500 mb-1">Total P/L (%)</p>
-          <p className={`text-lg font-mono ${performance.totalPnlPercent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-            {formatPercent(performance.totalPnlPercent)}
-          </p>
         </div>
       </div>
     </div>

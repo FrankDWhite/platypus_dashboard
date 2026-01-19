@@ -1,9 +1,14 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { IOpenTrade, IHistoricalTrade } from '@/types/trade';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const searchParams = request.nextUrl.searchParams;
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '25', 10);
+    const skip = (page - 1) * limit;
+
     console.error("Attempting to connect to database...");
     const client = await clientPromise;
     console.error("Database connection successful.");
@@ -21,6 +26,8 @@ export async function GET() {
     const historicalTrades = await db.collection<IHistoricalTrade>("historical_trades")
       .find({})
       .sort({ closedTime: -1 })
+      .skip(skip)
+      .limit(limit)
       .toArray();
     console.error("Successfully fetched historical trades.");
 
@@ -28,9 +35,13 @@ export async function GET() {
     const config = await db.collection("configuration").findOne({});
     console.error("Successfully fetched configuration.");
 
+    console.error("Fetching long term performance...");
+    const longTermPerformance = await db.collection("long_term_performance").findOne({});
+
     return NextResponse.json({ 
       openTrades, 
       historicalTrades,
+      longTermPerformance,
       config 
     });
     

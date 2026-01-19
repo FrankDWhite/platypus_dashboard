@@ -471,13 +471,13 @@ export default function TradesClient() {
           <span className={`text-sm font-bold px-2 py-0.5 rounded-md ${totalOpenPL >= 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
             {totalOpenPL >= 0 ? '+' : ''}{formatCurrency(totalOpenPL)}
           </span>
-          <span className="text-xs text-neutral-500 font-medium">Open P/L</span>
+          <span className="text-xs text-neutral-500 font-medium">P/L Open</span>
         </div>
         <div className="mt-2 flex items-center gap-2">
           <span className={`text-sm font-bold px-2 py-0.5 rounded-md ${todayRealizedPL >= 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'}`}>
             {todayRealizedPL >= 0 ? '+' : ''}{formatCurrency(todayRealizedPL)}
           </span>
-          <span className="text-xs text-neutral-500 font-medium">Today</span>
+          <span className="text-xs text-neutral-500 font-medium">P/L Today</span>
         </div>
       </div>
 

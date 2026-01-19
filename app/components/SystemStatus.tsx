@@ -24,7 +24,7 @@ export default function SystemStatus({
         </span>
       </div>
       
-      <div className="mt-4 pt-4 border-t border-neutral-800 flex justify-between items-end">
+      <div className="mt-4 pt-4 border-t border-neutral-800 flex justify-between items-start">
         <div>
           <p className="text-xs text-neutral-500 mb-1">Last Updated</p>
           <p className="text-xs font-mono text-neutral-300">

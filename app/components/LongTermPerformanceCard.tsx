@@ -25,12 +25,15 @@ export default function LongTermPerformanceCard({
         <div className="flex items-center space-x-3">
           <span className="text-sm font-medium text-neutral-400 uppercase tracking-wider">Historical Performance</span>
         </div>
-        <span className={`text-sm font-bold ${performance.winRate >= 50 ? 'text-emerald-400' : 'text-rose-400'}`}>
-          Win Rate: {performance.winRate.toFixed(2)}%
-        </span>
+        <div className="text-sm font-bold">
+          <span className="text-neutral-400">Win Rate: </span>
+          <span className={performance.winRate >= 50 ? 'text-emerald-400' : 'text-rose-400'}>
+            {performance.winRate.toFixed(2)}%
+          </span>
+        </div>
       </div>
       
-      <div className="mt-4 pt-4 border-t border-neutral-800 flex justify-between items-end">
+      <div className="mt-4 pt-4 border-t border-neutral-800 flex justify-between items-start">
         <div>
           <p className="text-xs text-neutral-500 mb-1">Total Trades</p>
           <p className="text-xs font-mono text-neutral-300">

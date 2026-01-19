@@ -279,6 +279,35 @@ const TradeCard = ({
   );
 };
 
+const LongTermPerformanceCard = ({ performance }: { performance: ILongTermPerformance }) => {
+  return (
+    <div className="bg-neutral-900 rounded-xl p-5 mb-6 border border-neutral-800">
+      <h2 className="text-xs font-bold text-neutral-500 uppercase tracking-widest mb-4">Long Term Performance</h2>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-xs text-neutral-500 mb-1">Total Trades</p>
+          <p className="text-lg font-mono text-white">{performance.totalTrades}</p>
+        </div>
+        <div>
+          <p className="text-xs text-neutral-500 mb-1">Win Rate</p>
+          <p className="text-lg font-mono text-white">{performance.winRate.toFixed(2)}%</p>
+        </div>
+        <div>
+          <p className="text-xs text-neutral-500 mb-1">Total P/L ($)</p>
+          <p className={`text-lg font-mono ${performance.totalPnlDollars >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+            {performance.totalPnlDollars > 0 ? '+' : ''}{formatCurrency(performance.totalPnlDollars)}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-neutral-500 mb-1">Total P/L (%)</p>
+          <p className={`text-lg font-mono ${performance.totalPnlPercent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+            {formatPercent(performance.totalPnlPercent)}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function TradesClient() {
   const [openTrades, setOpenTrades] = useState<IOpenTrade[]>([]);
@@ -477,6 +506,9 @@ export default function TradesClient() {
       <div className="px-3 md:px-4">
         {/* System Status Integration */}
         {systemConfig && <SystemStatus systemConfig={systemConfig} />}
+
+        {/* Long Term Performance Section */}
+        {longTermPerformance && <LongTermPerformanceCard performance={longTermPerformance} />}
 
         {/* Open Trades Section */}
         <div className="mb-8 mt-6">

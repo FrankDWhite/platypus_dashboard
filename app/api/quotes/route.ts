@@ -12,7 +12,7 @@ async function fetchSingleYahooQuote(symbol: string): Promise<IQuoteInfo | null>
   try {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
       clean
-    )}?interval=1d&range=5d`;
+    )}?interval=1d&range=ytd`;
     const res = await fetch(url, {
       headers: YAHOO_HEADERS,
       next: { revalidate: 60 },
@@ -25,9 +25,21 @@ async function fetchSingleYahooQuote(symbol: string): Promise<IQuoteInfo | null>
 
     const meta = result.meta || {};
     const price = Number(meta.regularMarketPrice ?? meta.chartPreviousClose ?? 0);
-    const previousClose = Number(meta.chartPreviousClose ?? price);
+    const ytdStartPrice = Number(meta.chartPreviousClose ?? price);
+    const closes: (number | null)[] =
+      result.indicators?.quote?.[0]?.close || [];
+    const validCloses = closes.filter(
+      (c): c is number => c !== null && c !== undefined && !Number.isNaN(c)
+    );
+    const previousClose =
+      validCloses.length >= 2
+        ? validCloses[validCloses.length - 2]
+        : ytdStartPrice;
+
     const changePercent =
       previousClose > 0 ? ((price - previousClose) / previousClose) * 100 : 0;
+    const ytdChangePercent =
+      ytdStartPrice > 0 ? ((price - ytdStartPrice) / ytdStartPrice) * 100 : 0;
 
     if (!price || Number.isNaN(price)) return null;
 
@@ -36,6 +48,8 @@ async function fetchSingleYahooQuote(symbol: string): Promise<IQuoteInfo | null>
       price: Number(price.toFixed(2)),
       previousClose: Number(previousClose.toFixed(2)),
       changePercent: Number(changePercent.toFixed(2)),
+      ytdStartPrice: Number(ytdStartPrice.toFixed(2)),
+      ytdChangePercent: Number(ytdChangePercent.toFixed(2)),
     };
   } catch (e) {
     console.error(`Failed to fetch quote for ${clean}:`, e);

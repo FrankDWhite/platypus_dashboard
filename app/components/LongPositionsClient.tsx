@@ -648,7 +648,7 @@ export default function LongPositionsClient() {
     const totalPortfolioReturnPct =
       netDeposited > 0 ? (totalPortfolioPnlDollars / netDeposited) * 100 : 0;
 
-    // Benchmark (S&P 500 SPY) performance on exact same capital deposits
+    // 1. Cash-Flow Matched Benchmark (S&P 500 SPY on exact deposit dates)
     const spyShares = summary?.benchmarkSpyShares ?? 0;
     const benchmarkNav =
       spyShares > 0 && spyLivePrice > 0 ? spyShares * spyLivePrice : netDeposited;
@@ -659,6 +659,16 @@ export default function LongPositionsClient() {
         : 0;
 
     const alphaPct = totalPortfolioReturnPct - benchmarkReturnPct;
+
+    // 2. Standard Buy-and-Hold S&P 500 YTD (from Dec 31 close)
+    const spyYtdStartPrice = quotes["SPY"]?.ytdStartPrice ?? 681.92;
+    const spyYtdReturnPct =
+      quotes["SPY"]?.ytdChangePercent ??
+      (spyLivePrice > 0 && spyYtdStartPrice > 0
+        ? ((spyLivePrice - spyYtdStartPrice) / spyYtdStartPrice) * 100
+        : 0);
+    const alphaVsYtdPct = totalPortfolioReturnPct - spyYtdReturnPct;
+
     const cashWeightPct = totalNav > 0 ? (cashBalance / totalNav) * 100 : 0;
     const equityWeightPct = totalNav > 0 ? (openEquityValue / totalNav) * 100 : 0;
 
@@ -677,6 +687,8 @@ export default function LongPositionsClient() {
       benchmarkReturnDollars,
       benchmarkReturnPct,
       alphaPct,
+      spyYtdReturnPct,
+      alphaVsYtdPct,
       cashWeightPct,
       equityWeightPct,
     };
@@ -791,7 +803,7 @@ export default function LongPositionsClient() {
           <div className="bg-neutral-900/90 border border-neutral-800 rounded-xl px-3.5 py-2.5 text-right">
             <div className="flex items-center justify-end gap-2">
               <span className="text-[10px] text-neutral-400 uppercase tracking-wider">
-                vs. S&amp;P 500 (SPY)
+                vs. S&amp;P 500 (Cash-Flow Matched)
               </span>
               <span
                 className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded ${
@@ -804,12 +816,29 @@ export default function LongPositionsClient() {
               </span>
             </div>
             <p className="text-xs font-mono text-neutral-400 mt-1">
-              SPY Benchmark:{" "}
+              Matched SPY:{" "}
               <span className="text-neutral-200 font-semibold">
                 {formatPercent(metrics.benchmarkReturnPct)}
               </span>
               {showDollars && ` (${formatCurrency(metrics.benchmarkNav)})`}
             </p>
+            <div className="mt-1.5 pt-1.5 border-t border-neutral-800/80 flex items-center justify-end gap-2 text-[11px] font-mono text-neutral-400">
+              <span>
+                SPY Buy &amp; Hold YTD:{" "}
+                <span className="text-neutral-300 font-semibold">
+                  {formatPercent(metrics.spyYtdReturnPct)}
+                </span>
+              </span>
+              <span
+                className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                  metrics.alphaVsYtdPct >= 0
+                    ? "bg-emerald-500/15 text-emerald-400"
+                    : "bg-rose-500/15 text-rose-400"
+                }`}
+              >
+                {formatPercent(metrics.alphaVsYtdPct)}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -1075,7 +1104,17 @@ export default function LongPositionsClient() {
                       </div>
                       <div
                         className={`text-xs font-medium mt-0.5 ${
-                          isProfit ? "text-emerald-500/90" : "text-rose-500/90"
+                          showDollars
+                            ? isProfit
+                              ? "text-emerald-500/90"
+                              : "text-rose-500/90"
+                            : vsSpyAlpha !== null
+                            ? vsSpyAlpha >= 0
+                              ? "text-emerald-500/90"
+                              : "text-rose-500/90"
+                            : isProfit
+                            ? "text-emerald-500/90"
+                            : "text-rose-500/90"
                         }`}
                       >
                         {showDollars

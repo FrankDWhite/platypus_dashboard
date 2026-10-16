@@ -61,6 +61,8 @@ export interface IQuoteInfo {
   price: number;
   previousClose?: number;
   changePercent?: number;
+  ytdStartPrice?: number;
+  ytdChangePercent?: number;
 }
 
 export interface IChartPoint {

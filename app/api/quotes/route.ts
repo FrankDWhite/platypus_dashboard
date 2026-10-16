@@ -5,9 +5,13 @@ const YAHOO_HEADERS = {
   "User-Agent": "Mozilla/5.0",
 };
 
+const VALID_SYMBOL_REGEX = /^[A-Z0-9.^=-]{1,12}$/;
+const ALLOWED_RANGES = new Set(["5d", "1mo", "3mo", "6mo", "ytd", "1y", "2y", "5y"]);
+const MAX_SYMBOLS_PER_REQUEST = 25;
+
 async function fetchSingleYahooQuote(symbol: string): Promise<IQuoteInfo | null> {
   const clean = symbol.trim().toUpperCase();
-  if (!clean || clean === "CASH") return null;
+  if (!clean || clean === "CASH" || !VALID_SYMBOL_REGEX.test(clean)) return null;
 
   try {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
@@ -63,10 +67,12 @@ async function fetchYahooChart(
   interval: string = "1d"
 ): Promise<IChartPoint[]> {
   const clean = symbol.trim().toUpperCase();
+  if (!clean || !VALID_SYMBOL_REGEX.test(clean)) return [];
+  const safeRange = ALLOWED_RANGES.has(range) ? range : "6mo";
   try {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
       clean
-    )}?interval=${encodeURIComponent(interval)}&range=${encodeURIComponent(range)}`;
+    )}?interval=${encodeURIComponent(interval)}&range=${encodeURIComponent(safeRange)}`;
     const res = await fetch(url, {
       headers: YAHOO_HEADERS,
       next: { revalidate: 300 },
@@ -102,7 +108,8 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const symbolsParam = searchParams.get("symbols");
   const chartSymbol = searchParams.get("chartSymbol");
-  const range = searchParams.get("range") || "6mo";
+  const rawRange = searchParams.get("range") || "6mo";
+  const range = ALLOWED_RANGES.has(rawRange) ? rawRange : "6mo";
 
   if (chartSymbol) {
     const chart = await fetchYahooChart(chartSymbol, range, "1d");
@@ -112,9 +119,9 @@ export async function GET(request: NextRequest) {
   const rawSymbols = symbolsParam
     ? symbolsParam.split(",").map((s) => s.trim().toUpperCase())
     : ["SPY"];
-  const uniqueSymbols = Array.from(new Set([...rawSymbols, "SPY"])).filter(
-    (s) => s && s !== "CASH"
-  );
+  const uniqueSymbols = Array.from(new Set([...rawSymbols, "SPY"]))
+    .filter((s) => s && s !== "CASH" && VALID_SYMBOL_REGEX.test(s))
+    .slice(0, MAX_SYMBOLS_PER_REQUEST);
 
   const results = await Promise.all(
     uniqueSymbols.map((sym) => fetchSingleYahooQuote(sym))

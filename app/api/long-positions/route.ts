@@ -8,13 +8,18 @@ import {
 
 export const dynamic = "force-dynamic";
 
+const ALLOWED_PORTFOLIOS = new Set(["main", "aggressive"]);
+
 export async function GET(request: NextRequest) {
   try {
-    const portfolioParam = (
+    const rawPortfolio = (
       request.nextUrl.searchParams.get("portfolio") || "main"
     )
       .toLowerCase()
       .trim();
+    const portfolioParam = ALLOWED_PORTFOLIOS.has(rawPortfolio)
+      ? rawPortfolio
+      : "main";
 
     const queryFilter =
       portfolioParam === "main"

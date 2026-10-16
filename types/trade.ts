@@ -1,60 +1,69 @@
-/**
- * This represents a position that the AI model (Platypus V2) has taken on a stock option contract.
- * trade_id is the unique identifier for this action and it will keep this id once it transitions to a historical trade.
- * Being profitable so far (or having won a previous trade) should have a "green" vibe, and a "red" vibe if a loss
- */
-export interface IOpenTrade {
-  trade_id: string;
-  ticker: string;
-  description: string;
-  quantity: number;
-  openedTime: Date;
-  purchasePrice: number;
-  changePercent: number; //this will remain 0 until the trade is closed. rely on combination of the latest TradeDatapoint and purchasePrice for latest P/L
-  changeDollars: number; //this will remain 0 until the trade is closed. rely on combination of the latest TradeDatapoint and purchasePrice for latest P/L
-  expirationDate?: Date;
-  strikePrice?: number;
-  optionType?: string;
+export type TransactionAction =
+  | "BUY"
+  | "ADD"
+  | "TRIM"
+  | "CLOSE"
+  | "DEPOSIT"
+  | "WITHDRAW"
+  | "ADJUST_CASH";
+
+export interface IPortfolioTransaction {
+  transaction_id: string;
+  position_id?: string | null;
+  symbol: string; // Ticker or "CASH"
+  action: TransactionAction;
+  date: string | Date;
+  shares?: number | null;
+  price?: number | null;
+  amount: number;
+  affectCash: boolean;
+  notes?: string | null;
+  costBasisAtSale?: number | null;
+  realizedPnlDollars?: number | null;
+  realizedPnlPercent?: number | null;
+  spyPriceAtDate?: number | null;
 }
 
-export interface IHistoricalTrade extends IOpenTrade {
-  soldPrice: number;
-  closedTime: Date;
+export interface ILongPositionV2 {
+  position_id: string;
+  symbol: string;
+  status: "OPEN" | "CLOSED";
+  openedDate: string | Date;
+  closedDate?: string | Date | null;
+  currentShares: number;
+  averageCostBasis: number;
+  totalCostBasis: number;
+  totalCapitalInvested: number;
+  totalSharesBought: number;
+  totalSharesSold: number;
+  totalSaleProceeds: number;
+  averageExitPrice?: number | null;
+  realizedPnlDollars: number;
+  realizedPnlPercent: number;
+  benchmarkCostBasisSpy?: number | null;
+  lastKnownPrice?: number | null;
+  notes?: string | null;
 }
 
-/**
- * This represents a particular point in a graph for an open (or closed) trade. the trade_id
- * will match a IOpenTrade or IHistoricalTrade.
- */
-export interface ITradeDatapoint {
-  trade_id: string;
-  timestamp: Date;
-  currentPrice: number;
+export interface IPortfolioSummary {
+  cashBalance: number;
+  totalNetDeposited: number;
+  benchmarkSpyShares: number;
+  benchmarkAvgCostSpy: number;
+  totalRealizedPnlDollars: number;
+  lastKnownSpyPrice?: number | null;
+  inceptionDate?: string | Date | null;
+  lastUpdated: string | Date;
 }
 
-/**
- * These are a couple of system diagnostics and overall performance. they could be displayed in some sort of status UI
- */
-export interface ISystemConfig {
-  status: string;
-  profitYTD: number;
-  lastUpdated: Date;
+export interface IQuoteInfo {
+  symbol: string;
+  price: number;
+  previousClose?: number;
+  changePercent?: number;
 }
 
-export interface ILongPosition {
-  symbol: string; // The ticker for the long equity position
-  quantity: number; // number of shares owned 
-  costBasis: number; // investment before any unrealized gain/loss (PER SHARE)
-  percentChange: number; // profit or loss on the position (percentage)
-  totalValue: number; // total investment value now
-}
-
-export interface ILongTermPerformance {
-  totalCapitalTraded: number;
-  totalTrades: number;
-  winningTrades: number;
-  losingTrades: number;
-  winRate: number;
-  totalPnlDollars: number;
-  totalPnlPercent: number;
+export interface IChartPoint {
+  timestamp: string;
+  price: number;
 }

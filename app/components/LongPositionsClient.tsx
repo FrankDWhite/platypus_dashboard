@@ -894,11 +894,11 @@ export default function LongPositionsClient({
           </div>
         </div>
 
-        {/* Sub-metrics Row: Active Equity Return, Realized Gains, Cash Split */}
+        {/* Sub-metrics Row: Unrealized Gains, Cash Split, Realized Gains */}
         <div className="mt-4 pt-3 border-t border-neutral-800/80 grid grid-cols-3 gap-2 text-xs">
           <div>
             <span className="text-neutral-500 block text-[10px] uppercase">
-              Active Equity Return
+              Unrealized Gains
             </span>
             <span
               className={`font-mono font-semibold ${

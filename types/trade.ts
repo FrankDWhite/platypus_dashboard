@@ -9,6 +9,7 @@ export type TransactionAction =
 
 export interface IPortfolioTransaction {
   transaction_id: string;
+  portfolio?: string;
   position_id?: string | null;
   symbol: string; // Ticker or "CASH"
   action: TransactionAction;
@@ -26,6 +27,7 @@ export interface IPortfolioTransaction {
 
 export interface ILongPositionV2 {
   position_id: string;
+  portfolio?: string;
   symbol: string;
   status: "OPEN" | "CLOSED";
   openedDate: string | Date;
@@ -46,6 +48,7 @@ export interface ILongPositionV2 {
 }
 
 export interface IPortfolioSummary {
+  portfolio?: string;
   cashBalance: number;
   totalNetDeposited: number;
   benchmarkSpyShares: number;

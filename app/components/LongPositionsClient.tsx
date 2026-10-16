@@ -540,7 +540,14 @@ function PositionDetailModal({
   );
 }
 
-export default function LongPositionsClient() {
+export default function LongPositionsClient({
+  initialPortfolio = "main",
+}: {
+  initialPortfolio?: "main" | "aggressive";
+} = {}) {
+  const [portfolio, setPortfolio] = useState<"main" | "aggressive">(
+    initialPortfolio
+  );
   const [positions, setPositions] = useState<ILongPositionV2[]>([]);
   const [transactions, setTransactions] = useState<IPortfolioTransaction[]>([]);
   const [summary, setSummary] = useState<IPortfolioSummary | null>(null);
@@ -557,11 +564,18 @@ export default function LongPositionsClient() {
     useState<ILongPositionV2 | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     async function loadPortfolioAndQuotes() {
+      setLoading(true);
+      setError(null);
+      setSelectedPosition(null);
       try {
-        const res = await fetch("/api/long-positions");
+        const res = await fetch(
+          `/api/long-positions?portfolio=${encodeURIComponent(portfolio)}`
+        );
         if (!res.ok) throw new Error("Failed to fetch portfolio data");
         const data = await res.json();
+        if (cancelled) return;
 
         const loadedPositions: ILongPositionV2[] = data.positions || [];
         const loadedTransactions: IPortfolioTransaction[] =
@@ -583,18 +597,25 @@ export default function LongPositionsClient() {
         const quoteRes = await fetch(
           `/api/quotes?symbols=${encodeURIComponent(querySymbols)}`
         );
-        if (quoteRes.ok) {
+        if (quoteRes.ok && !cancelled) {
           const quoteData = await quoteRes.json();
           setQuotes(quoteData.quotes || {});
         }
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load portfolio");
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : "Failed to load portfolio");
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
     loadPortfolioAndQuotes();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [portfolio]);
 
   const getLivePrice = (pos: ILongPositionV2): number => {
     return (
@@ -731,12 +752,17 @@ export default function LongPositionsClient() {
   return (
     <div className="w-full max-w-2xl mx-auto min-h-screen pb-24 relative select-none bg-black text-white">
       {/* Top Sticky Header */}
-      <div className="sticky top-0 z-30 bg-black/85 backdrop-blur-md border-b border-neutral-800 px-5 pt-10 pb-5">
-        <div className="flex items-center justify-between mb-4">
+      <div className="sticky top-0 z-30 bg-black/85 backdrop-blur-md border-b border-neutral-800 px-5 pt-8 pb-5">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <div>
-            <h1 className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
-              Platypus Capital · Long Portfolio
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
+                Platypus Capital ·{" "}
+                {portfolio === "aggressive"
+                  ? "Aggressive Account"
+                  : "Main Portfolio"}
+              </h1>
+            </div>
             {summary?.inceptionDate && (
               <p className="text-[11px] text-neutral-500 mt-0.5">
                 Track Record Since {formatShortDate(summary.inceptionDate)}
@@ -744,28 +770,54 @@ export default function LongPositionsClient() {
             )}
           </div>
 
-          {/* Toggle between "% Only" and "$ + %" */}
-          <div className="flex items-center bg-neutral-900 p-1 rounded-lg border border-neutral-800">
-            <button
-              onClick={() => setShowDollars(false)}
-              className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
-                !showDollars
-                  ? "bg-emerald-500 text-black shadow-sm"
-                  : "text-neutral-400 hover:text-white"
-              }`}
-            >
-              % Only
-            </button>
-            <button
-              onClick={() => setShowDollars(true)}
-              className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
-                showDollars
-                  ? "bg-emerald-500 text-black shadow-sm"
-                  : "text-neutral-400 hover:text-white"
-              }`}
-            >
-              $ + %
-            </button>
+          <div className="flex items-center gap-2">
+            {/* Portfolio Switcher: Main vs Aggressive */}
+            <div className="flex items-center bg-neutral-900 p-1 rounded-lg border border-neutral-800">
+              <button
+                onClick={() => setPortfolio("main")}
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                  portfolio === "main"
+                    ? "bg-white text-black shadow-sm"
+                    : "text-neutral-400 hover:text-white"
+                }`}
+              >
+                Main
+              </button>
+              <button
+                onClick={() => setPortfolio("aggressive")}
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                  portfolio === "aggressive"
+                    ? "bg-amber-500 text-black shadow-sm"
+                    : "text-neutral-400 hover:text-white"
+                }`}
+              >
+                Aggressive
+              </button>
+            </div>
+
+            {/* Toggle between "% Only" and "$ + %" */}
+            <div className="flex items-center bg-neutral-900 p-1 rounded-lg border border-neutral-800">
+              <button
+                onClick={() => setShowDollars(false)}
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                  !showDollars
+                    ? "bg-emerald-500 text-black shadow-sm"
+                    : "text-neutral-400 hover:text-white"
+                }`}
+              >
+                % Only
+              </button>
+              <button
+                onClick={() => setShowDollars(true)}
+                className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-all ${
+                  showDollars
+                    ? "bg-emerald-500 text-black shadow-sm"
+                    : "text-neutral-400 hover:text-white"
+                }`}
+              >
+                $ + %
+              </button>
+            </div>
           </div>
         </div>
 

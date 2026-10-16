@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import {
   ILongPositionV2,
@@ -8,30 +8,43 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const portfolioParam = (
+      request.nextUrl.searchParams.get("portfolio") || "main"
+    )
+      .toLowerCase()
+      .trim();
+
+    const queryFilter =
+      portfolioParam === "main"
+        ? { $or: [{ portfolio: "main" }, { portfolio: { $exists: false } }] }
+        : { portfolio: portfolioParam };
+
     const client = await clientPromise;
     const db = client.db("platypus_dashboard_db");
 
     const [positions, transactions, summary] = await Promise.all([
       db
         .collection<ILongPositionV2>("long_positions_v2")
-        .find({}, { projection: { _id: 0 } })
+        .find(queryFilter, { projection: { _id: 0 } })
         .toArray(),
       db
         .collection<IPortfolioTransaction>("long_transactions")
-        .find({}, { projection: { _id: 0 } })
+        .find(queryFilter, { projection: { _id: 0 } })
         .sort({ date: -1 })
         .toArray(),
       db
         .collection<IPortfolioSummary>("portfolio_summary")
-        .findOne({}, { projection: { _id: 0 } }),
+        .findOne(queryFilter, { projection: { _id: 0 } }),
     ]);
 
     return NextResponse.json({
+      portfolio: portfolioParam,
       positions,
       transactions,
       summary: summary || {
+        portfolio: portfolioParam,
         cashBalance: 0,
         totalNetDeposited: 0,
         benchmarkSpyShares: 0,
